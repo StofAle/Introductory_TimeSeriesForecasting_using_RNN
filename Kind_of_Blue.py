@@ -15,7 +15,20 @@ plt.style.use('fivethirtyeight')
 
 import numpy as np
 import pandas as pd
+import time
 
+class TimeHistory(tf.keras.callbacks.Callback):
+    """ class to record time it takes for each epoch in model fit
+    """
+    
+    def on_train_begin(self, logs={}):
+        self.times = []
+
+    def on_epoch_begin(self, epoch, logs={}):
+        self.epoch_time_start = time.time()
+
+    def on_epoch_end(self, epoch, logs={}):
+        self.times.append(time.time() - self.epoch_time_start)
 
 class Kind_of_Blue(object):
     """ some infos here
@@ -35,21 +48,27 @@ class Kind_of_Blue(object):
         
         # data fitting details
         self._selected_features = None
-        self._TRAIN_SPLIT = None
+        self._train_split = None
         
         # training and validation data
         self._train_data = None
         self._val_data = None
+        self._num_samples = None  # number of training samples
         
         # target
         self._target = None  # is assigned in generate_train_and_val_data()
         
-        # model
-        self._model = None
-        self._MODEL_TYPE = None
+        # model 
+        self._models = {}  # dictionary containing key=model name, value=model
+        # self._model = None
+        # self._model_type = None
         
-        # fitted model history
-        self._history = None
+        # model fit details
+        # self._history = None
+        # self._time_callback = None
+        self._histories = {}
+        self._time_callbacks = {}
+        
         
         
     @property
@@ -78,7 +97,7 @@ class Kind_of_Blue(object):
             if features[0]:
                 self._dataset = self._df[features].values
                 
-                self._TRAIN_SPLIT = int(len(self._df) * Kind_of_Blue.TRAIN_SPLIT_RATIO)
+                self._train_split = int(len(self._df) * Kind_of_Blue.TRAIN_SPLIT_RATIO)
             else:
                 print('please select feature for dataset')
         else:
@@ -98,8 +117,8 @@ class Kind_of_Blue(object):
 
         """
         # take training data only        
-        data_mean = self._dataset[:self._TRAIN_SPLIT].mean(axis=0)  
-        data_std = self._dataset[:self._TRAIN_SPLIT].std(axis=0)
+        data_mean = self._dataset[:self._train_split].mean(axis=0)  
+        data_std = self._dataset[:self._train_split].std(axis=0)
         
         # standardize data
         self._dataset = (self._dataset-data_mean)/data_std  
@@ -186,12 +205,16 @@ class Kind_of_Blue(object):
         num_in = Kind_of_Blue.create_time_steps(len(history))
         num_out = len(true_future)
     
-        plt.plot(num_in, np.array(history[:]), label='History')
-        plt.plot(np.arange(num_out), np.array(true_future), 'bo',
-               label='True Future')
+        size = 2
+        plt.scatter(num_in, np.array(history[:]), label='History', s=size
+                    , c='k')
+        plt.scatter(np.arange(num_out), np.array(true_future)
+                    , label='True Future', s=size, marker='x', c='r')
         if prediction.any():
-            plt.plot(np.arange(num_out), np.array(prediction), 'ro',
-                     label='Predicted Future')
+            plt.scatter(np.arange(num_out), np.array(prediction)
+                        , label='Predicted Future', s=size, marker='+'
+                        , c='b')
+            
         plt.legend(loc='upper left')
         plt.show()
         
@@ -201,7 +224,7 @@ class Kind_of_Blue(object):
     def generate_train_and_val_data(self, future_target_size: int
                                     , past_history_size: int
                                     , batch_size: int = None
-                                    , buffer_size: int = 100000
+                                    , buffer_size: int = 1000000
                                     , target_column: int=None) -> None:
         """ sets self._train_data and self._val_data in tensorflow model input format
         
@@ -231,12 +254,12 @@ class Kind_of_Blue(object):
         # get sliced training and validation set
         x_train, y_train = self.slice_time_series_data(target=self._target
                                                        , start_index=0
-                                                       , end_index=self._TRAIN_SPLIT
+                                                       , end_index=self._train_split
                                                        , history_size=past_history_size
                                                        , target_size=future_target_size)
         
         x_val, y_val = self.slice_time_series_data(target=self._target
-                                                   , start_index=self._TRAIN_SPLIT
+                                                   , start_index=self._train_split
                                                    , end_index=None
                                                    , history_size=past_history_size
                                                    , target_size=future_target_size)
@@ -245,6 +268,8 @@ class Kind_of_Blue(object):
                                                       , str(y_train.shape)))
         print('validation set shape: x:{}, y:{}'.format(str(x_val.shape)
                                                         , str(y_val.shape)))
+        
+        self._num_samples = x_train.shape[0]
         
         if not batch_size:
             batch_size = future_target_size
@@ -260,15 +285,20 @@ class Kind_of_Blue(object):
         return None
     
     
-    def compile_LSTM_model(self, units_1: int=4, units_2: int=8) -> None:
+    def compile_model(self, model_type: str
+                     , units: int=16, num_layers: int=2
+                     , output_shape: int=None
+                     , use_dropout: bool=True) -> None:
         """
         
 
         Parameters
         ----------
-        units_1 : int
-            DESCRIPTION.
-        units_2 : int
+        units_1 : int, optional
+            DESCRIPTION. The default is 4.
+        units_2 : int, optional
+            DESCRIPTION. The default is 8.
+        units_output_layer : int
             DESCRIPTION.
 
         Returns
@@ -278,27 +308,67 @@ class Kind_of_Blue(object):
 
         """
         
-        # initialize LSTM as sequential model
-        LSTM_model = tf.keras.models.Sequential()
+        if model_type=='LSTM':
+            # initialize LSTM as sequential model
+            LSTM_model = tf.keras.models.Sequential()
+            
+            if not output_shape:
+                output_shape = tuple(self._train_data._flat_shapes[1])[1]
+            
+            """
+            model.add(LSTM(units=50, return_sequences=True, input_shape=(features_set.shape[1], 1)))
+            model.add(Dropout(0.2))
+            
+            model.add(LSTM(units=50, return_sequences=True))
+            model.add(Dropout(0.2))
+            
+            model.add(LSTM(units=50, return_sequences=True))
+            model.add(Dropout(0.2))
+            
+            model.add(LSTM(units=50))
+            model.add(Dropout(0.2))
+            
+            from keras.layers import Dropout
+                """
         
-        # setup model configuration
-        input_shape = tuple(self._train_data._flat_shapes[0])[1:]
-        LSTM_model.add(tf.keras.layers.LSTM(units_1, return_sequences=True
-                                            , input_shape=input_shape))
-        LSTM_model.add(tf.keras.layers.LSTM(units_2, activation='relu'))
-        LSTM_model.add(tf.keras.layers.Dense(1))  # output layer
-        
-        # compile model
-        LSTM_model.compile(optimizer='adam', loss='mse', metrics=['mse'])
-        
-        self._model = LSTM_model
-        self._MODEL_TYPE = 'LSTM'
-        
+            
+            # setup model configuration
+            print('ToDo2: change a few things in the LSTM setup before running tests')
+            input_shape = tuple(self._train_data._flat_shapes[0])[1:]
+            LSTM_model.add(tf.keras.layers.LSTM(units=units, return_sequences=True
+                                                , input_shape=input_shape))
+    
+            
+            # add layers
+            while (num_layers - 2) > 0:
+                LSTM_model.add(tf.keras.layers.LSTM(units
+                                                    , return_sequences=True
+                                                    , activation='relu'))
+                if use_dropout:
+                    LSTM_model.add(tf.keras.layers.Dropout(0.2))
+                    
+                num_layers = num_layers - 1
+            
+            # penultimate layer
+            LSTM_model.add(tf.keras.layers.LSTM(units, activation='relu'))
+            if use_dropout:
+                LSTM_model.add(tf.keras.layers.Dropout(0.2))
+            
+            # output layer
+            LSTM_model.add(tf.keras.layers.Dense(output_shape))  
+            
+            # compile model
+            LSTM_model.compile(optimizer='adam', loss='mse', metrics=['mse'])
+            
+            # self._LSTM_model = LSTM_model
+            self._models['LSTM'] = LSTM_model
+            # self._model_type = 'LSTM'
+            
         return None
     
     
     def fit_model(self, epochs: int, steps_per_epoch: int
-                  , validation_steps: int) -> None:
+                  , validation_steps: int, model_type: str) -> None:
         """
         
 
@@ -311,17 +381,25 @@ class Kind_of_Blue(object):
     
         # steps_per_epoch : number of training batches = uniqueTrainingData / batchSize
             # https://stackoverflow.com/questions/45943675/meaning-of-validation-steps-in-keras-sequential-fit-generator-parameter-list/45944225
-        history = self._model.fit(self._train_data, epochs=epochs
+        
+        time_callback = TimeHistory()
+        
+        if model_type=='LSTM':
+            model = self._models['LSTM']
+            
+        history = model.fit(self._train_data, epochs=epochs
                                   , steps_per_epoch=steps_per_epoch
                                   , validation_data=self._val_data
-                                  , validation_steps=validation_steps)
-        
-        self._history = history
+                                  , validation_steps=validation_steps
+                                  , callbacks=[time_callback])
+        if model_type=='LSTM':
+            self._histories[['LSTM']] = history
+            self._time_callbacks['LSTM'] = time_callback
         
         return None
     
     
-    def plot_history(self) -> None:
+    def plot_history(self, model_type: str) -> None:
         """
         
 
@@ -331,9 +409,11 @@ class Kind_of_Blue(object):
             DESCRIPTION.
 
         """
+        if model_type=='LSTM':
+            history = self._histories['LSTM']
         
-        plt.plot(self._history.history['mse'], label='training loss (mse)')
-        plt.plot(self._history.history['val_mse'], label='validation loss (mse)')
+        plt.plot(history.history['mse'], label='training loss (mse)')
+        plt.plot(history.history['val_mse'], label='validation loss (mse)')
         plt.legend()
         plt.show()
         
