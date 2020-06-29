@@ -64,8 +64,6 @@ class Kind_of_Blue(object):
         # self._model_type = None
         
         # model fit details
-        # self._history = None
-        # self._time_callback = None
         self._histories = {}
         self._time_callbacks = {}
         
@@ -89,6 +87,7 @@ class Kind_of_Blue(object):
     
     def initialize_dataset(self) -> None:
         """ initialize dataset to be used in modelling approach
+        
         """
         
         if isinstance(self._df, pd.DataFrame):
@@ -224,7 +223,7 @@ class Kind_of_Blue(object):
     def generate_train_and_val_data(self, future_target_size: int
                                     , past_history_size: int
                                     , batch_size: int = None
-                                    , buffer_size: int = 1000000
+                                    , buffer_size: int = 100
                                     , target_column: int=None) -> None:
         """ sets self._train_data and self._val_data in tensorflow model input format
         
@@ -241,6 +240,7 @@ class Kind_of_Blue(object):
         None.
 
         """
+        print('debug3: check what buffer_size actually does! and why is data shape always (..., ..., 1) <- 1???')
         
         # set random seed for the shuffle results to be reproducable
         tf.random.set_seed(22)
@@ -272,6 +272,7 @@ class Kind_of_Blue(object):
         self._num_samples = x_train.shape[0]
         
         if not batch_size:
+            print('debug2', batch_size)
             batch_size = future_target_size
         
         # format data such that its acceptable input to the tensor flow model 
@@ -315,33 +316,19 @@ class Kind_of_Blue(object):
             if not output_shape:
                 output_shape = tuple(self._train_data._flat_shapes[1])[1]
             
-            """
-            model.add(LSTM(units=50, return_sequences=True, input_shape=(features_set.shape[1], 1)))
-            model.add(Dropout(0.2))
-            
-            model.add(LSTM(units=50, return_sequences=True))
-            model.add(Dropout(0.2))
-            
-            model.add(LSTM(units=50, return_sequences=True))
-            model.add(Dropout(0.2))
-            
-            model.add(LSTM(units=50))
-            model.add(Dropout(0.2))
-            
-            from keras.layers import Dropout
-                """
-        
-            
             # setup model configuration
-            print('ToDo2: change a few things in the LSTM setup before running tests')
             input_shape = tuple(self._train_data._flat_shapes[0])[1:]
             LSTM_model.add(tf.keras.layers.LSTM(units=units, return_sequences=True
                                                 , input_shape=input_shape))
     
             
             # add layers
+            print('debugLSTM: should an LSTM layer or a Dense layer be added?')
             while (num_layers - 2) > 0:
-                LSTM_model.add(tf.keras.layers.LSTM(units
+                # LSTM_model.add(tf.keras.layers.Dense(units=units
+                #                     , activation='relu')
+                               # )
+                LSTM_model.add(tf.keras.layers.LSTM(units=units
                                                     , return_sequences=True
                                                     , activation='relu'))
                 if use_dropout:
@@ -350,7 +337,8 @@ class Kind_of_Blue(object):
                 num_layers = num_layers - 1
             
             # penultimate layer
-            LSTM_model.add(tf.keras.layers.LSTM(units, activation='relu'))
+            # LSTM_model.add(tf.keras.layers.Dense(units=units, activation='relu'))
+            LSTM_model.add(tf.keras.layers.LSTM(units=units, activation='relu'))
             if use_dropout:
                 LSTM_model.add(tf.keras.layers.Dropout(0.2))
             
@@ -360,9 +348,59 @@ class Kind_of_Blue(object):
             # compile model
             LSTM_model.compile(optimizer='adam', loss='mse', metrics=['mse'])
             
-            # self._LSTM_model = LSTM_model
+            # add model to models dictionary
             self._models['LSTM'] = LSTM_model
-            # self._model_type = 'LSTM'
+            
+            
+        if model_type=='RNN':
+            """
+            model = tf.keras.models.Sequential()
+            model.add(tf.keras.layers.SimpleRNN(128, input_shape=input_shape, activation = 'relu'))
+            model.add(tf.keras.layers.Dropout(0.1))
+            model.add(tf.keras.layers.Dense(64, activation = 'relu'))
+            model.add(tf.keras.layers.Dropout(0.1))
+            model.add(tf.keras.layers.Dense(16, activation = 'relu'))
+            model.add(tf.keras.layers.Dropout(0.1))
+            model.add(tf.keras.layers.Dense(1, activation='linear'))
+            
+            model.compile(loss = 'mean_squared_error',
+                          optimizer = 'adam',
+                          metrics = ['mse'])
+            """
+
+            # initialize RNN as sequential model
+            RNN_model = tf.keras.models.Sequential()
+            
+            if not output_shape:
+                output_shape = tuple(self._train_data._flat_shapes[1])[1]
+            
+            # setup model configuration
+            input_shape = tuple(self._train_data._flat_shapes[0])[1:]
+            RNN_model.add(tf.keras.layers.SimpleRNN(units=units
+                                                    , input_shape=input_shape))
+            
+            # add layers
+            while (num_layers - 2) > 0:
+                RNN_model.add(tf.keras.layers.Dense(units=units
+                                                        , activation='relu'))
+                if use_dropout:
+                    RNN_model.add(tf.keras.layers.Dropout(0.2))
+                    
+                num_layers = num_layers - 1
+            
+            # penultimate layer
+            RNN_model.add(tf.keras.layers.Dense(units=units, activation='relu'))
+            if use_dropout:
+                RNN_model.add(tf.keras.layers.Dropout(0.2))
+            
+            # output layer
+            RNN_model.add(tf.keras.layers.Dense(output_shape))  
+            
+            # compile model
+            RNN_model.compile(optimizer='adam', loss='mse', metrics=['mse'])
+            
+            # add model to models dictionary
+            self._models['RNN'] = RNN_model
             
         return None
     
@@ -387,14 +425,21 @@ class Kind_of_Blue(object):
         if model_type=='LSTM':
             model = self._models['LSTM']
             
+        elif model_type=='RNN':
+            model = self._models['RNN']
+            
         history = model.fit(self._train_data, epochs=epochs
                                   , steps_per_epoch=steps_per_epoch
                                   , validation_data=self._val_data
                                   , validation_steps=validation_steps
                                   , callbacks=[time_callback])
         if model_type=='LSTM':
-            self._histories[['LSTM']] = history
+            self._histories['LSTM'] = history
             self._time_callbacks['LSTM'] = time_callback
+            
+        elif model_type=='RNN':
+            self._histories['RNN'] = history
+            self._time_callbacks['RNN'] = time_callback
         
         return None
     
@@ -411,6 +456,8 @@ class Kind_of_Blue(object):
         """
         if model_type=='LSTM':
             history = self._histories['LSTM']
+        if model_type=='RNN':
+            history = self._histories['RNN']
         
         plt.plot(history.history['mse'], label='training loss (mse)')
         plt.plot(history.history['val_mse'], label='validation loss (mse)')
