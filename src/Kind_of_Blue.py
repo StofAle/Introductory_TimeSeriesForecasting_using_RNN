@@ -223,7 +223,7 @@ class Kind_of_Blue(object):
     def generate_train_and_val_data(self, future_target_size: int
                                     , past_history_size: int
                                     , batch_size: int = None
-                                    , buffer_size: int = 100
+                                    , buffer_size: int = 100000
                                     , target_column: int=None) -> None:
         """ sets self._train_data and self._val_data in tensorflow model input format
         
@@ -240,8 +240,7 @@ class Kind_of_Blue(object):
         None.
 
         """
-        print('debug3: check what buffer_size actually does! and why is data shape always (..., ..., 1) <- 1???')
-        
+   
         # set random seed for the shuffle results to be reproducable
         tf.random.set_seed(22)
         
@@ -272,7 +271,6 @@ class Kind_of_Blue(object):
         self._num_samples = x_train.shape[0]
         
         if not batch_size:
-            print('debug2', batch_size)
             batch_size = future_target_size
         
         # format data such that its acceptable input to the tensor flow model 
