@@ -17,6 +17,7 @@ import numpy as np
 import pandas as pd
 import time
 
+
 class TimeHistory(tf.keras.callbacks.Callback):
     """ class to record time it takes for each epoch in model fit
     """
@@ -30,10 +31,14 @@ class TimeHistory(tf.keras.callbacks.Callback):
     def on_epoch_end(self, epoch, logs={}):
         self.times.append(time.time() - self.epoch_time_start)
 
+
 class Kind_of_Blue(object):
-    """ some infos here
+    """ Toolbox for comparing time series forecasts from simple RNN and LSTM
     
     methods:
+        - initialize_dataset(): filter dataset on selected features
+        - standardize_data(): standardize training dataset
+        - 
         
     """
     
@@ -60,8 +65,6 @@ class Kind_of_Blue(object):
         
         # model 
         self._models = {}  # dictionary containing key=model name, value=model
-        # self._model = None
-        # self._model_type = None
         
         # model fit details
         self._histories = {}
@@ -86,7 +89,7 @@ class Kind_of_Blue(object):
         
     
     def initialize_dataset(self) -> None:
-        """ initialize dataset to be used in modelling approach
+        """ initialize dataset to be used as model input
         
         """
         
@@ -106,7 +109,7 @@ class Kind_of_Blue(object):
     
     
     def standardize_data(self) -> None:
-        """
+        """ standardize training dataset
         
 
         Returns
@@ -180,7 +183,8 @@ class Kind_of_Blue(object):
     
     
     def multi_step_plot(self, history: np.ndarray, true_future: np.ndarray
-                        , prediction: np.ndarray) -> None:
+                        , prediction: np.ndarray, xlabel: str = None
+                        , title: str = None) -> None:
         """ plot predicted and true values
         
 
@@ -215,6 +219,12 @@ class Kind_of_Blue(object):
                         , c='b')
             
         plt.legend(loc='upper left')
+        if title:
+            plt.title(title)
+            
+        if xlabel:
+            plt.xlabel(xlabel)
+            
         plt.show()
         
         return None
@@ -321,7 +331,6 @@ class Kind_of_Blue(object):
     
             
             # add layers
-            print('debugLSTM: should an LSTM layer or a Dense layer be added?')
             while (num_layers - 2) > 0:
                 # LSTM_model.add(tf.keras.layers.Dense(units=units
                 #                     , activation='relu')
@@ -351,20 +360,6 @@ class Kind_of_Blue(object):
             
             
         if model_type=='RNN':
-            """
-            model = tf.keras.models.Sequential()
-            model.add(tf.keras.layers.SimpleRNN(128, input_shape=input_shape, activation = 'relu'))
-            model.add(tf.keras.layers.Dropout(0.1))
-            model.add(tf.keras.layers.Dense(64, activation = 'relu'))
-            model.add(tf.keras.layers.Dropout(0.1))
-            model.add(tf.keras.layers.Dense(16, activation = 'relu'))
-            model.add(tf.keras.layers.Dropout(0.1))
-            model.add(tf.keras.layers.Dense(1, activation='linear'))
-            
-            model.compile(loss = 'mean_squared_error',
-                          optimizer = 'adam',
-                          metrics = ['mse'])
-            """
 
             # initialize RNN as sequential model
             RNN_model = tf.keras.models.Sequential()
@@ -443,7 +438,7 @@ class Kind_of_Blue(object):
     
     
     def plot_history(self, model_type: str) -> None:
-        """
+        """ Plot training and validation error metric as a function of training epochs
         
 
         Returns
@@ -457,8 +452,11 @@ class Kind_of_Blue(object):
         if model_type=='RNN':
             history = self._histories['RNN']
         
-        plt.plot(history.history['mse'], label='training loss (mse)')
-        plt.plot(history.history['val_mse'], label='validation loss (mse)')
+        plt.plot(history.history['mse'], label='training')
+        plt.plot(history.history['val_mse'], label='validation')
+        plt.xlabel('number of epochs')
+        plt.ylabel('mean squared error')
+        plt.title('Training {} model'.format(model_type))
         plt.legend()
         plt.show()
         
