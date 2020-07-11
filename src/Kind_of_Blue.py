@@ -38,7 +38,13 @@ class Kind_of_Blue(object):
     methods:
         - initialize_dataset(): filter dataset on selected features
         - standardize_data(): standardize training dataset
-        - 
+        - slice_time_series_data(): create data slices compatible as keras input
+        - create_time_steps(): helper function for multi_stop_plot method
+        - multi_step_plot(): plot predicted and true values
+        - generate_train_and_val_data(): sets internal class train and validation data
+        - compile_model(): compile keras neural network model(s)
+        - fit_model(): use training data to fit model parameters
+        - plot_history(): Plot training and validation error metric as a function of training epochs
         
     """
     
@@ -134,7 +140,7 @@ class Kind_of_Blue(object):
                                , history_size: int , target_size: int
                                , step: int=1
                                ) -> [np.ndarray, np.ndarray]:
-        """ slice time series data
+        """ slice time series data to usable input to keras module
         
 
         Parameters
@@ -298,7 +304,7 @@ class Kind_of_Blue(object):
                      , units: int=16, num_layers: int=2
                      , output_shape: int=None
                      , use_dropout: bool=True) -> None:
-        """
+        """ compile model
         
 
         Parameters
@@ -400,7 +406,7 @@ class Kind_of_Blue(object):
     
     def fit_model(self, epochs: int, steps_per_epoch: int
                   , validation_steps: int, model_type: str) -> None:
-        """
+        """ use training data to fit model parameters
         
 
         Returns
