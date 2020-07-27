@@ -60,13 +60,27 @@ The above picture is of course an isolated view on the performance of the two mo
 <img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/01_RNN_mse.png' width=600px>
 <img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/01_LSTM_mse.png' width=600px>
 
-Choosing the mean-square error as a performance indicator, the minimum error as a function of the number of epochs and network units is tuned. Visualizing the magnitude of the MSE as the size of the 'dots' in the plots below, the  
+Choosing the mean-square error as a performance indicator, the minimum error as a function of the number of epochs and network units is tuned. Visualizing the magnitude of the MSE as the size of the 'dots' in the plots below, the performance of the two networks as a function of the number of units and number of epochs is evaluated.
+
+<img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/02_RNN.png' width=600px>
+<img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/02_LSTM.png' width=600px>
+
+update: takeaways from plots
+
+update: resume here
+
+<img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/02_RNN.png' width=600px>
+<img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/02_LSTM.png' width=600px>
+
+<img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/03_LSTM_std_0.5.jpg' width=600px>
+<img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/03_LSTM_std_1.0.jpg' width=600px>
+
+<img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/03_LSTM_training.png' width=600px>
+<img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/03_LSTM_training.png' width=600px>
 
 
 ## Results
 
-### Backtesting
-<br> update
 
 
 
