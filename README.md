@@ -54,7 +54,9 @@ In the first two experiments (**Part 1 & 2**), the training data is a continuous
 
 ## Results
 <br> 
-In a first step, the neural networks are specified by having two dense layers with 128 units and a 20% dropout layer between them. The activation function is a recitified linear unit. With the training data having one-year length, the following pictures from two sample results illustrate the differences in the quality of the fit from the simple RNN and LSTM:
+
+### Clean synthetic data
+In a first step, the neural networks are specified by having two dense layers with 128 units and a 20% dropout layer between them. The activation function is a rectified linear unit. With the training data having one-year worth of daily data, the following pictures from two sample results illustrate the differences in the quality of the fit from the simple RNN and LSTM:
 
 <img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/01_LSTM_1.png' width=600px>
 <img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/01_RNN_1.png' width=600px>
@@ -77,19 +79,21 @@ For the RNN model, the MSE is not monotonic in either the number of units or the
 
 For the LSTM model, the error is found to be roughly invariant under changes to the number of epochs beyond 10 epochs. It decreases with the number of units.
 
+### Noisy synthetic data
+Adding noise to the clean data will impact the model performance. By how much? This question is answered by 1) adding noise as a separate input next to the clean data and 2) distorting the clean data by super-imposing it with random noise. In both cases, three scenarios are considered: The random noise is Gaussian with zero mean and standard deviations of 0.1, 1.0 and 10.0. For the first case, the following two inputs are fed into the models: 
 
-update: resume here
+<img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/03_addedNoise_1.png' width=600px>
+<img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/03_addedNoise_2.png' width=600px>
+<img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/03_addedNoise_3.png' width=600px>
 
-<img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/02_RNN.png' width=600px>
-<img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/02_LSTM.png' width=600px>
+epochs = 10
+num layers: 128
+added noise: standard deviations to the Gaussian noise are: [0.1, 1.0, 10.0]
 
 
-???update below plots
-<img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/03_LSTM_std_0.5.jpg' width=600px>
-<img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/03_LSTM_std_1.0.jpg' width=600px>
 
-<img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/03_LSTM_training.png' width=600px>
-<img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/03_LSTM_training.png' width=600px>
+04_RNN_cleanData
+04_LSTM_cleanData
 
 
 
