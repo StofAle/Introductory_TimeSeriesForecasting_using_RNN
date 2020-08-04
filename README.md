@@ -80,24 +80,50 @@ For the RNN model, the MSE is not monotonic in either the number of units or the
 For the LSTM model, the error is found to be roughly invariant under changes to the number of epochs beyond 10 epochs. It decreases with the number of units.
 
 ### Noisy synthetic data
-Adding noise to the clean data will impact the model performance. By how much? This question is answered by 1) adding noise as a separate input next to the clean data and 2) distorting the clean data by super-imposing it with random noise. In both cases, three scenarios are considered: The random noise is Gaussian with zero mean and standard deviations of 0.1, 1.0 and 10.0. For the first case, the following two inputs are fed into the models: 
+Adding noise to the clean data will impact the model performance. By how much? This question is answered by 1) adding noise as a separate input next to the clean data and 2) distorting the clean data by super-imposing it with random noise. In both cases, three scenarios are considered: The random noise is Gaussian with zero mean and standard deviations of 0.1, 1.0 and 10.0. For the first case, the following two inputs are fed into the models. In the second case, the clean input is distorted with varying noise level.
 
+Both network configurations have 128 units and are run on 10 epochs. 
+
+#### clean data with added noise
+In this scenario, the following three input data set are fed into the models:
+##### standard deviation = 0.1
 <img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/03_addedNoise_1.png' width=600px>
+##### standard deviation = 1.0
 <img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/03_addedNoise_2.png' width=600px>
+##### standard deviation = 10.0
 <img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/03_addedNoise_3.png' width=600px>
+The performance of both models is not impacted by the magnitude of the noise. This is visible in the plots below by noting that the size of the dots stay the same as the standard deviation for the Gaussian noise increases. What is rather peculiar is dependency of the time it takes to train the model with the stardard deviation. For both models, the training time varies by roughly 10% when the standard deviation is scaled from 0.1 to 10.0. While it increases with increasing noise level for the simple RNN, the opposite behavior is observed for the LSTM model: the training time decreases with an increase in noise.
+<img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/03_RNN_addedNoise_training.png' width=600px>
+<img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/03_LSTM_addedNoise_training.png' width=600px>
 
-epochs = 10
-num layers: 128
-added noise: standard deviations to the Gaussian noise are: [0.1, 1.0, 10.0]
+#### distored data
+In this scenario, the following three input data set are fed into the models:
 
+##### standard deviation = 0.1
+<img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/03_distorted_1.png' width=600px>
+##### standard deviation = 1.0
+<img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/03_distorted_2.png' width=600px>
+##### standard deviation = 10.0
+<img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/03_distorted_3.png' width=600px>
+Similar to the scenario run above, the model performance for various levels of noise is evaluated. For the simple RNN, the results plotted below show a rather weak dependency of the model performance on the noise level; the size of the dots stay roughly constant with increasing standard deviation. For the LSTM model, a dramatical increase in MSE is observed when scaling the standard deviation from 0.1 to 1.0. For a standard deviation of 0.1, the model performance is comparable to that in the previous scenario, where the noise was added as a separate feature. Beyond a value of 1.0, the magnitude of the error is comparable to that of the simple RNN.
+<img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/03_RNN_distorted_training.png' width=600px>
+<img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/03_LSTM_distorted_training.png' width=600px>
 
+### How much history is needed?
 
-04_RNN_cleanData
-04_LSTM_cleanData
+(continue here)
 
+The past history lengths is chosen as multiples of 1, 10, 20 and 52 of the the to-be-predicted future length, which is 7 data points.
 
+#### clean data
+<img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/04_RNN_clean.png' width=600px>
+<img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/04_LSTM_clean.png' width=600px>
 
+#### distorted data
+std dev 0.1
 
+<img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/04_RNN_distorted.png' width=600px>
+<img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/04_LSTM_distorted.png' width=600px>
 
 
 
