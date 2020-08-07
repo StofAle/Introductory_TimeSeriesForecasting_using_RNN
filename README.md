@@ -88,8 +88,10 @@ Both network configurations have 128 units and are run on 10 epochs.
 In this scenario, the following three input data set are fed into the models:
 ##### standard deviation = 0.1
 <img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/03_addedNoise_1.png' width=600px>
+
 ##### standard deviation = 1.0
 <img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/03_addedNoise_2.png' width=600px>
+
 ##### standard deviation = 10.0
 <img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/03_addedNoise_3.png' width=600px>
 The performance of both models is not impacted by the magnitude of the noise. This is visible in the plots below by noting that the size of the dots stay the same as the standard deviation for the Gaussian noise increases. What is rather peculiar is dependency of the time it takes to train the model with the stardard deviation. For both models, the training time varies by roughly 10% when the standard deviation is scaled from 0.1 to 10.0. While it increases with increasing noise level for the simple RNN, the opposite behavior is observed for the LSTM model: the training time decreases with an increase in noise.
@@ -101,8 +103,10 @@ In this scenario, the following three input data set are fed into the models:
 
 ##### standard deviation = 0.1
 <img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/03_distorted_1.png' width=600px>
+
 ##### standard deviation = 1.0
 <img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/03_distorted_2.png' width=600px>
+
 ##### standard deviation = 10.0
 <img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/03_distorted_3.png' width=600px>
 Similar to the scenario run above, the model performance for various levels of noise is evaluated. For the simple RNN, the results plotted below show a rather weak dependency of the model performance on the noise level; the size of the dots stay roughly constant with increasing standard deviation. For the LSTM model, a dramatical increase in MSE is observed when scaling the standard deviation from 0.1 to 1.0. For a standard deviation of 0.1, the model performance is comparable to that in the previous scenario, where the noise was added as a separate feature. Beyond a value of 1.0, the magnitude of the error is comparable to that of the simple RNN.

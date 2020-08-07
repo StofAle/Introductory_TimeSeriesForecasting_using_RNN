@@ -214,14 +214,20 @@ class Kind_of_Blue(object):
         num_in = Kind_of_Blue.create_time_steps(len(history))
         num_out = len(true_future)
     
-        size = 2
+        size = 40
+        
         plt.scatter(num_in, np.array(history[:]), label='History', s=size
-                    , c='k')
+                    , c='k'
+                    # , marker='.'
+                    )
         plt.scatter(np.arange(num_out), np.array(true_future)
-                    , label='True Future', s=size, marker='x', c='r')
+                    , label='True Future', s=size
+                    # , marker='x'
+                    , c='r')
         if prediction.any():
             plt.scatter(np.arange(num_out), np.array(prediction)
-                        , label='Predicted Future', s=size, marker='+'
+                        , label='Predicted Future', s=size
+                        # , marker='+'
                         , c='b')
             
         plt.legend(loc='upper left')
