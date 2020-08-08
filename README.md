@@ -115,21 +115,61 @@ Similar to the scenario run above, the model performance for various levels of n
 
 ### How much history is needed?
 
-(continue here)
+In order to optimize for the amount of historical data to supply to the networks in order have a minimum MSE given the (fixed) forecasting horizon, both models are evaluated under changing length of historical data. Both the clean (sine-wave) data set as well as the noisy (distorted) data set are considered.
 
-The past history lengths is chosen as multiples of 1, 10, 20 and 52 of the the to-be-predicted future length, which is 7 data points.
+The past history lengths is chosen as multiples of 1, 10, 20 and 52 of the the to-be-predicted future length, which is 7 data points. 
 
 #### clean data
+For the simple RNN as well as the LSTM model, the performance seems to be roughly invariant under the amount of historical data supplied. 
 <img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/04_RNN_clean.png' width=600px>
 <img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/04_LSTM_clean.png' width=600px>
 
 #### distorted data
-std dev 0.1
+With the standard deviation set to 0.1, the model performance on the distorted data does show a non-trivial dependency on the amount of historical data supplied. With increasing historical information, the model performance of the simple RNN initially improves but progressively gets worst for length beyond ten times the forecasting horizon. For the LSTM, the model performance seems to improve with increasing amounts of historical data. Note the missing results in the plot for the LSTM model output for length at 10 and 20 times the future horizon - here the implementation simply did not put out a number.S  
 
 <img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/04_RNN_distorted.png' width=600px>
 <img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/04_LSTM_distorted.png' width=600px>
 
 
+### ETF stock data
+The insights gained from the analysis on the clean and noisy data sets are applied to two time series on exchange traded fund stock data. Data on two ETFs with Brazilian stock underlyings are forecasted; their tickers are EWZ and BRZU. The time historical time windows as well as the forecasting horizon is taken to be the same as in the previous analysis. Similarly, the configuration of the two neural networks is the one that has been optimized in the previous analyses.
+A visual inspection on the EWZ time series shows a somewhat seasonal behavior in the time period 2015-2020, with two peaks: one around the turn of the year (Nov-Dec) and one around summer (May-June). (This has motivated to start the series of experiments with a sine-wave and subsequently adding noise to it). The time series for the (leveraged) BRZU ETF shows a similar seasonal behavior as the EWZ. Since its leveraged, it does have a lot more variance though when compared to the non-leveraged EWZ.
+A scatter plot as well as seasonal decomposition and autocorrelation plots of the Close prices are shown below. 
+
+#### EWZ
+<img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/05_EWZ_close.png' width=600px>
+<img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/05_EWZ_seasonal.png' width=600px>
+<img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/05_EWZ_seasonal.png' width=600px>
+
+#### BRZU
+<img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/05_BRZU_close.png' width=600px>
+<img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/05_BRZU_seasonal.png' width=600px>
+<img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/05_BRZU_seasonal.png' width=600px>
+
+Running the simple RNN as well as the LSTM model in the previously optimized configuration (with a seven day forecasting horizon and thirty five days worth of historical data), the model performance as measured through the mean-square error is comparable for both models:
+
+#### EWZ
+<img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/05_EWZ_RNN_training.png' width=600px>
+<img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/05_EWZ_LSTM_training.png' width=600px>
+
+#### BRZU
+<img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/05_BRZU_RNN_training.png' width=600px>
+<img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/05_BRZU_LSTM_training.png' width=600px>
 
 
+This analysis is concluded by showing a few forecasts for both data sets. The model output for the EWZ data seems to suffer from a high bias, with the forecasted data points having little variance. A similar situation is visible for the BRZU data set. Especially the LSTM model configuration does systematically seem to overestimate the level of the data while not giving enough variance to the forecasted data points for them appear realistic compared to historical values. These and a few other issues will be the topic of future work... 
+
+#### EWZ
+<img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/05_EWZ_RNN_pred_1.png' width=600px>
+<img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/05_EWZ_RNN_pred_2.png' width=600px>
+
+<img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/05_EWZ_LSTM_pred_1.png' width=600px>
+<img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/05_EWZ_LSTM_pred_2.png' width=600px>
+
+#### BRZU
+<img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/05_BRZU_RNN_pred_1.png' width=600px>
+<img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/05_BRZU_RNN_pred_2.png' width=600px>
+
+<img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/05_BRZU_LSTM_pred_1.png' width=600px>
+<img src='https://github.com/StofAle/Introductory_TimeSeriesForecasting_using_RNN/blob/master/images/05_BRZU_LSTM_pred_2.png' width=600px>
  
